@@ -1,0 +1,16 @@
+{
+  "name": "copilot-multi-agent",
+  "version": "1.0.0",
+  "description": "GitHub Copilot multi-agent system: repo analyzer + plain-English explainer",
+  "scripts": {
+    "analyze":  "node agents/agent1_analyzer.js --repo .",
+    "explain":  "node agents/agent2_explainer.js",
+    "pipeline": "node scripts/run_pipeline.js --repo .",
+    "pipeline:html": "node scripts/run_pipeline.js --repo . --format html"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["github-copilot", "multi-agent", "code-analysis", "ai"],
+  "license": "MIT"
+}
