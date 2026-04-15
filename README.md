@@ -69,11 +69,10 @@ Agent 2 calls the GitHub Models API (backed by Copilot) to generate smart explan
 
 ```bash
 # Mac / Linux
-export GITHUB_TOKEN=ghp_your_token_here
+export GITHUB_TOKEN=ghp_
 
 # Windows (PowerShell)
-$env:GITHUB_TOKEN = "ghp_your_token_here"
-
+$env:GITHUB_TOKEN = "ghp_
 # To make it permanent, add it to your ~/.bashrc or ~/.zshrc
 echo 'export GITHUB_TOKEN=ghp_your_token_here' >> ~/.bashrc
 ```

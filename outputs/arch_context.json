@@ -1,0 +1,127 @@
+{
+  "repo_name": "GurukulAI_CFS",
+  "repo_url": "https://github.com/Shilpa-PJ/GurukulAI_CFS",
+  "branch": "main",
+  "analyzed_at": "2026-04-14T17:28:55.450Z",
+  "tech_stack": [
+    "Python",
+    "JavaScript (React)",
+    "Node.js",
+    "React"
+  ],
+  "architecture_pattern": "Modular / Component-Based",
+  "entry_points": [
+    "main.py"
+  ],
+  "components": [
+    {
+      "name": "agent",
+      "file": "agent.py",
+      "type": "module",
+      "purpose": "Module: agent",
+      "calls": []
+    },
+    {
+      "name": "build_index",
+      "file": "build_index.py",
+      "type": "module",
+      "purpose": "Module: build_index",
+      "calls": []
+    },
+    {
+      "name": "main",
+      "file": "main.py",
+      "type": "module",
+      "purpose": "Module: main",
+      "calls": []
+    },
+    {
+      "name": "mcp_server",
+      "file": "mcp_server.py",
+      "type": "module",
+      "purpose": "Module: mcp_server",
+      "calls": []
+    },
+    {
+      "name": "planner",
+      "file": "planner.py",
+      "type": "module",
+      "purpose": "Module: planner",
+      "calls": []
+    },
+    {
+      "name": "rag",
+      "file": "rag.py",
+      "type": "module",
+      "purpose": "Module: rag",
+      "calls": []
+    },
+    {
+      "name": "rag_service",
+      "file": "rag_service.py",
+      "type": "service",
+      "purpose": "Business logic for rag_",
+      "calls": []
+    },
+    {
+      "name": "App",
+      "file": "src/App.jsx",
+      "type": "module",
+      "purpose": "Module: App",
+      "calls": []
+    },
+    {
+      "name": "main",
+      "file": "src/main.jsx",
+      "type": "module",
+      "purpose": "Module: main",
+      "calls": [
+        "App"
+      ]
+    },
+    {
+      "name": "summarizer",
+      "file": "summarizer.py",
+      "type": "module",
+      "purpose": "Module: summarizer",
+      "calls": []
+    },
+    {
+      "name": "tool_executor",
+      "file": "tool_executor.py",
+      "type": "module",
+      "purpose": "Module: tool_executor",
+      "calls": []
+    }
+  ],
+  "data_flows": [
+    {
+      "name": "General data flow",
+      "from": "Input",
+      "through": [
+        "Processing Layer"
+      ],
+      "to": "Output"
+    }
+  ],
+  "external_services": [
+    {
+      "name": "HTTP Client",
+      "type": "external_api",
+      "used_by": [
+        "agent",
+        "main",
+        "mcp_server",
+        "App"
+      ]
+    },
+    {
+      "name": "SQLite",
+      "type": "database",
+      "used_by": [
+        "main"
+      ]
+    }
+  ],
+  "summary": "GurukulAI_CFS is a Modular / Component-Based application built with Python, JavaScript (React), Node.js, React. It contains 11 component(s) with 1 entry point(s). External dependencies: SQLite."
+}

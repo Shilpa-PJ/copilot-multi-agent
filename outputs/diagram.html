@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GurukulAI_CFS — Architecture Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #080c14;
+    --surface:   #0d1424;
+    --surface2:  #121929;
+    --border:    rgba(255,255,255,0.07);
+    --text:      #e2e8f0;
+    --muted:     #64748b;
+    --accent:    #38bdf8;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-sans: 'Sora', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(56,189,248,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(120px); opacity: 0.12; pointer-events: none; z-index: 0;
+  }
+  .orb-1 { width: 600px; height: 600px; top: -200px; left: -200px; background: #6366f1; }
+  .orb-2 { width: 500px; height: 500px; bottom: -100px; right: -100px; background: #10b981; }
+  .orb-3 { width: 400px; height: 400px; top: 40%; left: 50%; background: #38bdf8; opacity: 0.07; }
+
+  .page { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── Header ── */
+  .header {
+    display: flex; flex-direction: column; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px; margin-bottom: 40px;
+  }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .repo-label {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .repo-name {
+    font-size: clamp(28px, 5vw, 44px); font-weight: 700; line-height: 1.1;
+    background: linear-gradient(135deg, #e2e8f0 0%, #38bdf8 60%, #6366f1 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .pattern-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc; font-family: var(--font-mono); font-size: 11px;
+    padding: 5px 12px; border-radius: 20px; margin-top: 10px;
+  }
+  .meta-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
+  .meta-item { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  .meta-item a { color: var(--accent); text-decoration: none; }
+  .meta-item a:hover { text-decoration: underline; }
+
+  /* ── Stats ── */
+  .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 40px; }
+  .stat-box {
+    flex: 1; min-width: 120px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: border-color 0.2s;
+  }
+  .stat-box:hover { border-color: rgba(56,189,248,0.3); }
+  .stat-value { font-size: 32px; font-weight: 700; font-family: var(--font-mono); color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 48px; }
+  .section-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    font-family: var(--font-mono);
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── Tech Stack ── */
+  .stack-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .stack-pill {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font-mono);
+    font-size: 12px; padding: 5px 14px; border-radius: 20px;
+    transition: all 0.2s;
+  }
+  .stack-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Entry Points ── */
+  .entry-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .entry-point {
+    background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25);
+    color: #34d399; font-family: var(--font-mono);
+    font-size: 12px; padding: 5px 14px; border-radius: 6px;
+  }
+
+  /* ── Layers ── */
+  .layers { display: flex; flex-direction: column; gap: 20px; }
+  .layer {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--layer-color);
+    border-radius: 12px; overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .layer:hover { box-shadow: 0 0 0 1px var(--layer-color), 0 8px 32px rgba(0,0,0,0.4); }
+  .layer-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px; background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+  }
+  .layer-icon { font-size: 16px; }
+  .layer-title { font-size: 13px; font-weight: 600; color: var(--layer-color); flex: 1; }
+  .layer-count {
+    font-family: var(--font-mono); font-size: 11px;
+    background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px;
+    color: var(--muted);
+  }
+  .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; }
+  .comp-card {
+    background: var(--bg);
+    padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px;
+    position: relative; cursor: default;
+    transition: background 0.15s;
+  }
+  .comp-card:hover { background: var(--surface2); }
+  .comp-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--accent); opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .comp-card:hover::before { opacity: 1; }
+  .comp-icon {
+    font-size: 18px; margin-top: 2px; flex-shrink: 0;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--accent);
+  }
+  .comp-body { flex: 1; min-width: 0; }
+  .comp-name {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+    color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .comp-purpose {
+    font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .calls {
+    font-size: 10px; color: var(--accent); font-family: var(--font-mono);
+    margin-top: 5px; opacity: 0.7;
+  }
+  .comp-badge {
+    font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); opacity: 0.5;
+    flex-shrink: 0; padding-top: 3px;
+  }
+
+  /* ── Data Flows ── */
+  .flows { display: flex; flex-direction: column; gap: 12px; }
+  .flow-row {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px;
+    transition: border-color 0.2s;
+  }
+  .flow-row:hover { border-color: rgba(56,189,248,0.3); }
+  .flow-label {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: var(--font-mono); margin-bottom: 12px;
+  }
+  .flow-steps {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  }
+  .flow-step {
+    background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2);
+    color: #7dd3fc; font-family: var(--font-mono); font-size: 12px;
+    padding: 5px 12px; border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .flow-step:first-child {
+    background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #34d399;
+  }
+  .flow-step:last-child {
+    background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: #fbbf24;
+  }
+  .flow-arrow { color: var(--muted); font-size: 14px; }
+
+  /* ── External Services ── */
+  .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .svc-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: 2px solid var(--svc-color);
+    border-radius: 10px; padding: 16px; display: flex; gap: 12px; align-items: flex-start;
+    transition: box-shadow 0.2s;
+  }
+  .svc-card:hover { box-shadow: 0 0 20px rgba(0,0,0,0.4); }
+  .svc-icon { font-size: 22px; flex-shrink: 0; }
+  .svc-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .svc-type {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: var(--font-mono); color: var(--svc-color); margin-top: 2px;
+  }
+  .svc-used { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+
+  /* ── Summary Box ── */
+  .summary-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px 28px;
+    border-left: 3px solid var(--accent);
+    font-size: 14px; line-height: 1.8; color: #94a3b8;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); font-family: var(--font-mono);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .page > * { animation: fadeUp 0.4s ease both; }
+  .page > *:nth-child(2) { animation-delay: 0.05s; }
+  .page > *:nth-child(3) { animation-delay: 0.10s; }
+  .page > *:nth-child(4) { animation-delay: 0.15s; }
+  .page > *:nth-child(5) { animation-delay: 0.20s; }
+  .page > *:nth-child(6) { animation-delay: 0.25s; }
+  .page > *:nth-child(7) { animation-delay: 0.30s; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: white; color: black; }
+    .orb, body::before { display: none; }
+    .layer, .stat-box, .svc-card, .flow-row, .summary-box { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="repo-label">Architecture Diagram</div>
+        <div class="repo-name">GurukulAI_CFS</div>
+        <div class="pattern-tag">◈ Modular / Component-Based</div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <div class="meta-item">🔗 <a href="https://github.com/Shilpa-PJ/GurukulAI_CFS" target="_blank">https://github.com/Shilpa-PJ/GurukulAI_CFS</a></div>
+      <div class="meta-item">⎇ main</div>
+      <div class="meta-item">🕐 Analyzed 4/14/2026, 5:28:55 PM</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-value">11</div>
+      <div class="stat-label">Components</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">1</div>
+      <div class="stat-label">Entry Points</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Ext. Services</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">1</div>
+      <div class="stat-label">Data Flows</div>
+    </div></div>
+
+  <!-- Tech Stack -->
+  <div class="section">
+    <div class="section-title">Tech Stack</div>
+    <div class="stack-row"><span class="stack-pill">Python</span><span class="stack-pill">JavaScript (React)</span><span class="stack-pill">Node.js</span><span class="stack-pill">React</span></div>
+  </div>
+
+  <!-- Entry Points -->
+  <div class="section">
+    <div class="section-title">Entry Points</div>
+    <div class="entry-row"><code class="entry-point">▶ main.py</code></div>
+  </div>
+
+  <!-- Architecture Layers -->
+  <div class="section">
+    <div class="section-title">Architecture Layers · 11 components</div>
+    <div class="layers">
+      
+      <div class="layer" style="--layer-color:#10b981">
+        <div class="layer-header">
+          <span class="layer-icon">⚙</span>
+          <span class="layer-title">Service Layer</span>
+          <span class="layer-count">1</span>
+        </div>
+        <div class="comp-grid">
+      <div class="comp-card" style="--accent:#10b981;--bg:#064e3b" data-type="service" title="rag_service.py">
+        <span class="comp-icon">⚙</span>
+        <div class="comp-body">
+          <div class="comp-name">rag_service</div>
+          <div class="comp-purpose">Business logic for rag_</div>
+          
+        </div>
+        <span class="comp-badge">Service</span>
+      </div></div>
+      </div>
+      <div class="layer" style="--layer-color:#38bdf8">
+        <div class="layer-header">
+          <span class="layer-icon">◻</span>
+          <span class="layer-title">Module Layer</span>
+          <span class="layer-count">10</span>
+        </div>
+        <div class="comp-grid">
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="agent.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">agent</div>
+          <div class="comp-purpose">Module: agent</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="build_index.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">build_index</div>
+          <div class="comp-purpose">Module: build_index</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="main.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">main</div>
+          <div class="comp-purpose">Module: main</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="mcp_server.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">mcp_server</div>
+          <div class="comp-purpose">Module: mcp_server</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="planner.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">planner</div>
+          <div class="comp-purpose">Module: planner</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="rag.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">rag</div>
+          <div class="comp-purpose">Module: rag</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="src/App.jsx">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">App</div>
+          <div class="comp-purpose">Module: App</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="src/main.jsx">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">main</div>
+          <div class="comp-purpose">Module: main</div>
+          <div class="calls">→ App</div>
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="summarizer.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">summarizer</div>
+          <div class="comp-purpose">Module: summarizer</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div>
+      <div class="comp-card" style="--accent:#38bdf8;--bg:#0c4a6e" data-type="module" title="tool_executor.py">
+        <span class="comp-icon">◻</span>
+        <div class="comp-body">
+          <div class="comp-name">tool_executor</div>
+          <div class="comp-purpose">Module: tool_executor</div>
+          
+        </div>
+        <span class="comp-badge">Module</span>
+      </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Flows -->
+  <div class="section">
+    <div class="section-title">Data Flows</div>
+    <div class="flows">
+      
+      <div class="flow-row">
+        <div class="flow-label">General data flow</div>
+        <div class="flow-steps">
+          
+            <div class="flow-step">Input</div>
+            <div class="flow-arrow">→</div>
+          
+            <div class="flow-step">Processing Layer</div>
+            <div class="flow-arrow">→</div>
+          
+            <div class="flow-step">Output</div>
+            
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- External Services -->
+  
+  <div class="section">
+    <div class="section-title">External Services · 2 detected</div>
+    <div class="services-grid">
+      <div class="svc-card" style="--svc-color:#38bdf8">
+        <span class="svc-icon">🌐</span>
+        <div class="svc-body">
+          <div class="svc-name">HTTP Client</div>
+          <div class="svc-type">external api</div>
+          <div class="svc-used">Used by: agent, main, mcp_server +1</div>
+        </div>
+      </div>
+      <div class="svc-card" style="--svc-color:#f59e0b">
+        <span class="svc-icon">🗃</span>
+        <div class="svc-body">
+          <div class="svc-name">SQLite</div>
+          <div class="svc-type">database</div>
+          <div class="svc-used">Used by: main</div>
+        </div>
+      </div></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary-box">GurukulAI_CFS is a Modular / Component-Based application built with Python, JavaScript (React), Node.js, React. It contains 11 component(s) with 1 entry point(s). External dependencies: SQLite.</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>Generated by Agent 3 — Architecture Diagram Generator</span>
+    <span>2026-04-15T02:21:03.952Z</span>
+  </div>
+
+</div>
+</body>
+</html>
